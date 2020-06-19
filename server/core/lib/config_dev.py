@@ -3,6 +3,6 @@ LOCAL_DATABASE_CONFIGURATION = {
     'port': 3306,
     'dbname': 'acedge',
     'retry': 3,
-    'user': 'root',
-    'password': 'root',
+    'user': 'shreesh',
+    'password': 'shreesh',
 }

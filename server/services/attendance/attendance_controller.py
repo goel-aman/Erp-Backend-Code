@@ -26,9 +26,12 @@ class StudentAttendance(Resource):
             content-type: application/json
         """
         if not student_id:
+            
             return {"error": "Mandatory parameter student id not supplied"}, 400
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
+        print(start_date)
+        print(end_date)
         print(request.args)
         attendance_handler = AttendanceHandler()
         print('Making request to the handler to get the students data')
@@ -52,7 +55,24 @@ class StudentAttendance(Resource):
             return  None, 201
             content-type: application/json
         """
-        pass
+        
+        if not student_id:
+            
+            return {"error": "Mandatory parameter student id not supplied"}, 400
+        
+
+        data_input=request.json
+        
+        start_date=data_input['start_date']
+        end_date=data_input['end_date']
+        status=data_input['status']
+        #return jsonify({"student_id": student_id, "start_date": start_date, "end_date": end_date, "status": status})
+
+        attendance_handler = AttendanceHandler()
+        print('Making request to the handler to post the students data')
+
+        attendance_handler.PostStudentAttendance(student_id,start_date,end_date,status)
+        # SHREESH WORK ENDS HERE
 
     def put(self, student_id):
         """
@@ -71,6 +91,24 @@ class StudentAttendance(Resource):
             return  None, 201
             content-type: application/json
         """
+        if not student_id:
+            
+            return {"error": "Mandatory parameter student id not supplied"}, 400
+        
+
+        data_input=request.json
+        
+        start_date=data_input['start_date']
+        end_date=data_input['end_date']
+        status=data_input['status']
+        #return jsonify({"student_id": student_id, "start_date": start_date, "end_date": end_date, "status": status})
+
+        attendance_handler = AttendanceHandler()
+        print('Making request to the handler to post the students data')
+
+        attendance_handler.PutStudentAttendance(student_id,start_date,end_date,status)
+
+
         pass
 
     def delete(self, student_id):
@@ -89,7 +127,22 @@ class StudentAttendance(Resource):
             return  None, 200
             content-type: application/json
         """
-        pass
+        if not student_id:
+            
+            return {"error": "Mandatory parameter student id not supplied"}, 400
+        
+
+        data_input=request.json
+        
+        start_date=data_input['start_date']
+        end_date=data_input['end_date']
+        
+        #return jsonify({"student_id": student_id, "start_date": start_date, "end_date": end_date, "status": status})
+
+        attendance_handler = AttendanceHandler()
+        print('Making request to the handler to post the students data')
+
+        attendance_handler.DeleteStudentAttendance(student_id,start_date,end_date)
 
 
 class StudentsAttendance(Resource):
@@ -114,7 +167,21 @@ class StudentsAttendance(Resource):
             return "Attendance is not calculated for the date: {date}", 400  
             content-type: application/json
         """
-        pass
+       
+
+        if not class_id:
+            
+            return {"error": "Mandatory parameter class id not supplied"}, 400
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        print(start_date)
+        print(end_date)
+        print(request.args)
+        attendance_handler = AttendanceHandler()
+        print('Making request to the handler to get the students data')
+        return jsonify(attendance_handler.GetStudentsAttendance(class_id, **request.args))
+
+  
 
     def post(self, class_id):
         """
@@ -133,9 +200,26 @@ class StudentsAttendance(Resource):
         Response:
             None, 202
         """
-        pass
+        if not class_id:
+            
+            return {"error": "Mandatory parameter class id not supplied"}, 400
+        data_input=request.json
+        for i in data_input:
+            roll_no=i['roll_no']
+            start_date=i['start_date']
+            end_date=i['end_date']
+            status=i['status']
+            #return jsonify({"student_id": student_id, "start_date": start_date, "end_date": end_date, "status": status})
 
-    def update(self, class_id):
+            
+            attendance_handler = AttendanceHandler()
+            print('Making request to the handler to post the students data')
+
+            attendance_handler.PostStudentsAttendance(class_id,roll_no,start_date,end_date,status)
+
+        #pass
+
+    def put(self, class_id):
         """
         Updates students attendance given a date and class.
         Param:
@@ -152,9 +236,24 @@ class StudentsAttendance(Resource):
         Response:
             None, 202
         """
-        pass
+        if not class_id:
+            
+            return {"error": "Mandatory parameter class id not supplied"}, 400
+        data_input=request.json
+        for i in data_input:
+            roll_no=i['roll_no']
+            start_date=i['start_date']
+            end_date=i['end_date']
+            status=i['status']
+            #return jsonify({"student_id": student_id, "start_date": start_date, "end_date": end_date, "status": status})
 
-    def delete(self, class_id: int):
+            attendance_handler = AttendanceHandler()
+            print('Making request to the handler to post the students data')
+
+            attendance_handler.UpdateStudentsAttendance(class_id,roll_no,start_date,end_date,status)
+        #pass
+
+    def delete(self, class_id):
         """
         Deletes students attendance given a date and class.
         Param:
@@ -167,4 +266,16 @@ class StudentsAttendance(Resource):
         Response:
             None, 200
         """
-        pass
+        if not class_id:
+            
+            return {"error": "Mandatory parameter class id not supplied"}, 400
+        
+        data_input=request.json
+        start_date=data_input['start_date']
+        end_date = data_input['end_date']
+        attendance_handler = AttendanceHandler()
+        print('Making request to the handler to post the students data')
+
+        attendance_handler.DeleteStudentsAttendance(class_id,start_date,end_date)
+        
+        #pass

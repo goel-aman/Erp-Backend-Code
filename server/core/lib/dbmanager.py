@@ -7,7 +7,7 @@ import time
 import traceback
 import core.lib.config_dev as config
 
-from mysql.connector import errorcode
+#from mysql.connector import DBConnectionError
 
 
 class DBManager(object):
