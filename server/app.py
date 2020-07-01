@@ -12,8 +12,13 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
+from services.assignment.assignment_controller import UploadAssignmentByEmployee
+
 app = Flask(__name__)
 api = Api(app)
+
+# app.config['UPLOAD_FOLDER'] = "uploads/"
+
 
 api.add_resource(StudentAttendance, "/attendance/student/<int:student_id>")
 """
@@ -99,5 +104,15 @@ api.add_resource(TeacherDashboardLeaveCategoryRecord, "/teacherdashboardleavecat
 """
     get -> teacher login (leave -> leave dashboard)
 """
+
+"""
+    ASSIGNMENT - related APIs
+"""
+
+api.add_resource(UploadAssignmentByEmployee, "/assignment/employee/<int:employee_id>")
+"""
+    get -> teacher or admin assignment upload
+"""
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
