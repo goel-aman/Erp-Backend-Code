@@ -16,7 +16,6 @@ class AssignmentHandler():
 
     def checkEmployee(self, employee_id):
         """
-
         :return:
         """
         return_val = None
