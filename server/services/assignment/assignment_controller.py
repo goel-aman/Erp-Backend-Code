@@ -43,13 +43,15 @@ class UploadAssignmentByEmployee(Resource):
         assignment_type = request_payload.get("assignment_type", "")
         assignment_type = eval(assignment_type)
 
-        import pdb; pdb.set_trace()
+        import pdb;
+        pdb.set_trace()
         # Check if employee exists
         check_emp = AssignmentHandler().checkEmployee(employee_id)
         if check_emp[1] == False:
             return jsonify(check_emp[0])
 
-        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject, section=section, class_=class_, assignment_type=assignment_type):
+        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject,
+                                   section=section, class_=class_, assignment_type=assignment_type):
             try:
                 deadline = datetime.strptime(deadline, "%Y-%m-%d")
             except ValueError:
@@ -60,8 +62,9 @@ class UploadAssignmentByEmployee(Resource):
             if len(assignment_type) == len(request.files):
                 random = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
                 for i in range(len(request.files)):
-                    fh = request.files.get("file" + str(i+1))
-                    assignment_file = random + "_file" + str(i+1) + "__" + assignment_type.get("file"+str(i+1)).lower() + "__" + secure_filename(fh.filename)
+                    fh = request.files.get("file" + str(i + 1))
+                    assignment_file = random + "_file" + str(i + 1) + "__" + assignment_type.get(
+                        "file" + str(i + 1)).lower() + "__" + secure_filename(fh.filename)
                     fh.save(assignment_file)
                     list_of_files.append(assignment_file)
             else:
@@ -75,9 +78,35 @@ class UploadAssignmentByEmployee(Resource):
                     return jsonify("Accepted file types are .pdf, .docx, .doc, .xlsx file")
 
             assignment_handler = AssignmentHandler()
-            return_val = assignment_handler.uploadAssignment(employee_id, title, description, deadline, subject, class_, section, list_of_files)
+            return_val = assignment_handler.uploadAssignment(employee_id, title, description, deadline, subject, class_,
+                                                             section, list_of_files)
 
             return jsonify("File saved" + return_val)
         else:
             return jsonify("Some fields are missing")
 
+
+class AssignmentSubmit(Resource):
+    def post(self, student_id):
+        """
+                Post student assignment solutions given student id.
+                Param:
+                    student_id: Student id.
+                Request:
+                    path: api/v0/assignmentsubmit
+                    body: {
+                        student_id : Student_id,
+                        question_type : 2,
+                        solution : 3,
+                    },
+                    accept: application/json
+                Response:
+                    return  None, 201
+                    content-type: application/json
+        """
+        if not student_id:
+            return {"error": "mandatory parameter not supplied"}, 404
+        assignment_sol = request.json
+        assignment_handler = AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        assignment_handler.assignment_submit(student_id, assignment_sol)
