@@ -2,6 +2,7 @@ import datetime
 import calendar
 import pandas as pd
 
+
 class AssignmentDao():
 
     def __init__(self, db_conn, class_, section, subject, comma_files, title, description, deadline, employee_id):
@@ -36,7 +37,6 @@ class AssignmentDao():
                     "('%s', '%s', '%s', '%s', '%s', %s, %s, %s);" % (
                         title, comma_files, description, self.today, deadline, self.subject_id, c_id, employee_id)
             records = self.db_conn.processquery(query=query, fetch=False)
-
 
     def uploadSubjective(self, employee_id, title, description, deadline, file, list_of_files, type):
         # try:
@@ -75,14 +75,14 @@ class AssignmentDao():
         for assign_id in assign_ids:
             for i in range(len(ques_list)):
                 query = "insert into question_pool (question_type_id, question, " \
-                        "assignment_id, marks, answer, expected_no_of_words) "\
-                        "values (%s, '%s', %s, %s, '', %s);" % (type_id, ques_list[i], assign_id, marks_list[i], expected_no_of_words[i])
+                        "assignment_id, marks, answer, expected_no_of_words) " \
+                        "values (%s, '%s', %s, %s, '', %s);" % (
+                            type_id, ques_list[i], assign_id, marks_list[i], expected_no_of_words[i])
                 records = self.db_conn.processquery(query=query, fetch=False)
         return_val = "Inserted Subjective document"
         return (return_val, True)
         # except:
         #     return "Some error happened!"
-
 
     def uploadMCQ(self, employee_id, title, description, deadline, file, list_of_files, type):
         # try:
@@ -100,8 +100,8 @@ class AssignmentDao():
         excel_data = pd.read_excel(file)
         df = pd.DataFrame(excel_data)
         # check if atleast 2 choice column is available
-        if df["Choice1"].isnull().values.any() or df["Choice2"].isnull().values.any()\
-                or df["Marks"].isnull().values.any() or df["Questions"].isnull().values.any()\
+        if df["Choice1"].isnull().values.any() or df["Choice2"].isnull().values.any() \
+                or df["Marks"].isnull().values.any() or df["Questions"].isnull().values.any() \
                 or df["Answers"].isnull().values.any():
             return_val = "Missing mandatory Column values in the Excel"
             # drop processing the excel
@@ -152,18 +152,61 @@ class AssignmentDao():
                 query = "insert into question_pool (question_type_id, question, " \
                         "assignment_id, marks, choice1, choice2, choice3, choice4, " \
                         "choice5, choice6, answer) values (%s, '%s', %s, %s, '%s', " \
-                        "'%s', '%s', '%s', '%s', '%s', '%s');" % (type_id, questions[i], id, marks[i], choice1[i], choice2[i], choice_3, choice_4, choice_5, choice_6, answers[i])
+                        "'%s', '%s', '%s', '%s', '%s', '%s');" % (
+                            type_id, questions[i], id, marks[i], choice1[i], choice2[i], choice_3, choice_4, choice_5,
+                            choice_6, answers[i])
                 records = self.db_conn.processquery(query=query, fetch=False)
 
         return_val = " Inserted MCQ document"
         return (return_val, True)
 
 
+class AssignmentSubmitDao():
+    def __init__(self, db_conn):
+        self.db_conn = db_conn
+
+    def submit_assignment(self, student_id, question_pool_id, solution, flag):
+        query = "select qp.question_type_id from question_pool qp where qp.id= %s" % (question_pool_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        if flag == 1:
+            if records[0]['question_type_id'] == 3:
+                query = "select class_id from student_class_mapping where student_id = %s" % (student_id)
+                records1 = self.db_conn.processquery(query=query, fetch=True)
+                query = "select assignment_id from question_pool where id = %s" % (question_pool_id)
+                records2 = self.db_conn.processquery(query=query, fetch=True)
+                query = "insert into student_assignment_map (assignment_id, class_id, student_id, " \
+                        "submission_datetime, response_sheet_link) values (%s, %s, %s,now(),'%s')" % (
+                            records2[0]['assignment_id'], records1[0]['class_id'], student_id, solution)
+                self.db_conn.processquery(query=query, fetch=False)
+            else:
+                query = "insert into quiz_response (student_id, question_pool_id, answer) values " \
+                        "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
+                self.db_conn.processquery(query=query, fetch=False)
+        else:
+            query = "insert into quiz_response (student_id, question_pool_id, answer) values " \
+                    "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
+            self.db_conn.processquery(query=query, fetch=False)
+
+    def submit_assignment_2(self, student_id: int, question_pool_id):
+        query = "select class_id from student_class_mapping where student_id = %s" % (student_id)
+        records1 = self.db_conn.processquery(query=query, fetch=True)
+        query = "select assignment_id from question_pool where id = %s" % (question_pool_id)
+        records2 = self.db_conn.processquery(query=query, fetch=True)
+        query = "insert into student_assignment_map (assignment_id, class_id, student_id, " \
+                "submission_datetime) values (%s, %s, %s,now())" % (
+                    records2[0]['assignment_id'], records1[0]['class_id'], student_id)
+        self.db_conn.processquery(query=query, fetch=False)
+
+    def check_question_type(self, question_pool_id: int):
+        query = "select qp.question_type_id from question_pool qp where qp.id= %s" % (question_pool_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+
 class CheckEmployee():
 
     def __init__(self, db_conn):
         self.db_conn = db_conn
-
 
     def checkEmployee(self, employee_id):
         query = "select username, is_active from users where user_id=%s;" % (employee_id)
@@ -174,4 +217,3 @@ class CheckEmployee():
             return return_val
 
         return ("User doesn't exist", False)
-
