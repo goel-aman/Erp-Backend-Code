@@ -95,8 +95,8 @@ class AssignmentSubmit(Resource):
                 Request:
                     path: api/v0/assignmentsubmit
                     body: {
-                        student_id : Student_id,
-                        question_type : 2,
+
+                        question_pool_id : 2,
                         solution : 3,
                     },
                     accept: application/json
