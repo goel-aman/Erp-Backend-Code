@@ -32,7 +32,7 @@ class AssignmentHandler():
         return (return_msg, True) if return_val[1] else (return_msg, False)
 
 
-    def uploadAssignment(self, employee_id, title, description, deadline, subject, class_, section, list_of_files):
+    def uploadAssignment(self, employee_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks):
         """
         :return:
         """
@@ -50,18 +50,24 @@ class AssignmentHandler():
             if file_count <= len(list_of_files) - 2:
                 comma_files += ", "
 
-        assignment_dao = AssignmentDao(db_conn, class_, section, subject, comma_files, title, description, deadline, employee_id)
+        assignment_dao = AssignmentDao(db_conn, class_=class_, section=section, subject=subject, comma_files=comma_files, \
+                                       title=title, description=description, deadline=deadline, employee_id=employee_id)
 
         for file in list_of_files:
+            # Fetching assignment type,
             type = re.search('__[\w]+?__', file)
             type = file[type.start(0)+2:type.end(0)-2]
             file_ext = file.split('.')[1]
+            # Fetching file number for manual marks,
+            file_num = re.search('_file\d{1}?_', file)
+            file_num = file[file_num.start(0)+1 : file_num.end(0)-1]
             if type == "manual":
-                return_val = ("Inserted Manual Document", True)
+                mark = manual_marks.get(file_num, "")
+                return_val = assignment_dao.uploadManual(file, comma_files, mark, type)
             elif type == "subjective" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadSubjective(employee_id, title, description, deadline, file, comma_files, type)
+                return_val = assignment_dao.uploadSubjective(file, comma_files, type)
             elif type == "mcq" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadMCQ(employee_id, title, description, deadline, file, comma_files, type)
+                return_val = assignment_dao.uploadMCQ(file, comma_files, type)
             # Break if any one fails
             if return_val[1] == True:
                 return_msg += " " + return_val[0]

@@ -4,24 +4,34 @@ import pandas as pd
 
 class AssignmentDao():
 
-    def __init__(self, db_conn, class_, section, subject, comma_files, title, description, deadline, employee_id):
+    def __init__(self, db_conn, **kwargs):
         self.db_conn = db_conn
+        self.class_ = kwargs.get("class_", "")
+        self.section = kwargs.get("section", "")
+        self.subject = kwargs.get("subject", "")
+        self.comma_files = kwargs.get("comma_files", "")
+        self.title = kwargs.get("title", "")
+        self.description = kwargs.get("description", "")
+        self.deadline = kwargs.get("deadline", "")
+        self.employee_id = kwargs.get("employee_id", "")
 
         # Fetch class Id,
         self.class_ids = list()
-        if len(section) > 1:
-            for i in section:
-                query = "select class_id from class where standard=%s and section='%s';" % (class_, i)
-                records = self.db_conn.processquery(query=query, fetch=True)
-                if len(records) > 0:
-                    self.class_ids.append(records[0].get("class_id"))
+        if self.section != "" and self.class_ != "":
+            if len(self.section) > 1:
+                for i in self.section:
+                    query = "select class_id from class where standard=%s and section='%s';" % (self.class_, i)
+                    records = self.db_conn.processquery(query=query, fetch=True)
+                    if len(records) > 0:
+                        self.class_ids.append(records[0].get("class_id"))
 
         # Fetch subject Id,
-        self.subject_id = None
-        query = "select subject_id from subject where name='%s';" % (subject)
-        records = self.db_conn.processquery(query=query, fetch=True)
-        if len(records) > 0:
-            self.subject_id = records[0].get("subject_id")
+        if self.subject != "":
+            self.subject_id = None
+            query = "select subject_id from subject where name='%s';" % (self.subject)
+            records = self.db_conn.processquery(query=query, fetch=True)
+            if len(records) > 0:
+                self.subject_id = records[0].get("subject_id")
 
         # Initiation Date,
         self.today = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -30,15 +40,45 @@ class AssignmentDao():
             Insert Assignment records, and should be done for only one time for all the Uploads,
             This function also handles manual document uploading, as there is no questions to them,
         """
+        if self.title != "" and self.comma_files != "" and self.description != "" and self.deadline != "" and self.subject_id != "" \
+                and self.class_ids != "" and self.employee_id != "" and self.title != "":
+            for c_id in self.class_ids:
+                query = "insert into assignment (title, file_link, description, initiation_date, " \
+                        "submission_date, subject_id, class_id, uploaded_by) values " \
+                        "('%s', '%s', '%s', '%s', '%s', %s, %s, %s);" % (
+                            self.title, self.comma_files, self.description, self.today, self.deadline, self.subject_id, c_id, self.employee_id)
+                records = self.db_conn.processquery(query=query, fetch=False)
+
+
+    def uploadManual(self, file, list_of_files, mark, type):
+        return_val = None
+        # Query Question Type to fetch the Id with the type,
+        query = "select id from question_type where question_type='%s';" % (type)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        type_id = None
+        if len(records) > 0:
+            type_id = records[0].get("id")
+
+        # Get Assignment Ids for the all sections,
+        assign_ids = list()
+
         for c_id in self.class_ids:
-            query = "insert into assignment (title, file_link, description, initiation_date, " \
-                    "submission_date, subject_id, class_id, uploaded_by) values " \
-                    "('%s', '%s', '%s', '%s', '%s', %s, %s, %s);" % (
-                        title, comma_files, description, self.today, deadline, self.subject_id, c_id, employee_id)
+            query = "select assignment_id from assignment where file_link='%s' and class_id=%s;" % (list_of_files, c_id)
+            records = self.db_conn.processquery(query=query, fetch=True)
+            if len(records) == 1:
+                assign_ids.append(records[0].get("assignment_id", ""))
+
+        # Insert into question_pool with manual file link,
+        for assign_id in assign_ids:
+            query = "insert into question_pool (question_type_id, assignment_id, marks, manual_link) " \
+                    "values (%s, %s, %s, '%s');" % (type_id, assign_id, mark, file)
             records = self.db_conn.processquery(query=query, fetch=False)
 
+        return_val = "Inserted Manual document"
+        return (return_val, True)
 
-    def uploadSubjective(self, employee_id, title, description, deadline, file, list_of_files, type):
+
+    def uploadSubjective(self, file, list_of_files, type):
         # try:
         # Query Question Type to fetch the Id with the type,
         query = "select id from question_type where question_type='%s';" % (type)
@@ -49,7 +89,6 @@ class AssignmentDao():
 
         return_val = None
         # Insert assignment records for Subjective type,
-
         excel_data = pd.read_excel(file)
         # creating dataframe,
         df = pd.DataFrame(excel_data)
@@ -84,7 +123,7 @@ class AssignmentDao():
         #     return "Some error happened!"
 
 
-    def uploadMCQ(self, employee_id, title, description, deadline, file, list_of_files, type):
+    def uploadMCQ(self, file, list_of_files, type):
         # try:
         # Query Question Type to fetch the Id with the type,
         query = "select id from question_type where question_type='%s';" % (type)

@@ -28,7 +28,17 @@ class UploadAssignmentByEmployee(Resource):
                 "level_id": "Section of the class",
                 "fille": "Assignment file as an Excel sheet (.xlsx)",
             },
-            accept: application/json
+            Example Form data Format:
+
+            title:Assignment 1
+            description:This is your first assignment.
+            deadline:2020-07-10
+            subject:Science
+            class:4
+            section:A,B,C
+            assignment_type:{"file1": "MCQ", "file2": "Subjective", "file3": "Manual", "file4": "Manual"}
+            manual_marks:{"file3": 50, "file4": 25}
+            // finally, actual files should have the name "file1, file2, file3, file4, ..."
         Response:
             return  None, 201
             content-type: application/json
@@ -41,15 +51,19 @@ class UploadAssignmentByEmployee(Resource):
         class_ = request_payload.get("class", "")
         section = request_payload.get("section", "")
         assignment_type = request_payload.get("assignment_type", "")
-        assignment_type = eval(assignment_type)
+        manual_marks = request_payload.get("manual_marks", "")
+        try:
+            assignment_type = eval(assignment_type)
+            manual_marks = eval(manual_marks)
+        except:
+            return "Invalid Marks or Assignment Type"
 
-        import pdb; pdb.set_trace()
         # Check if employee exists
         check_emp = AssignmentHandler().checkEmployee(employee_id)
         if check_emp[1] == False:
             return jsonify(check_emp[0])
 
-        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject, section=section, class_=class_, assignment_type=assignment_type):
+        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject, section=section, class_=class_, assignment_type=assignment_type, manual_marks=manual_marks):
             try:
                 deadline = datetime.strptime(deadline, "%Y-%m-%d")
             except ValueError:
@@ -75,7 +89,7 @@ class UploadAssignmentByEmployee(Resource):
                     return jsonify("Accepted file types are .pdf, .docx, .doc, .xlsx file")
 
             assignment_handler = AssignmentHandler()
-            return_val = assignment_handler.uploadAssignment(employee_id, title, description, deadline, subject, class_, section, list_of_files)
+            return_val = assignment_handler.uploadAssignment(employee_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks)
 
             return jsonify("File saved" + return_val)
         else:
