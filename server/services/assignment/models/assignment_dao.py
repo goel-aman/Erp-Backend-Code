@@ -165,41 +165,36 @@ class AssignmentSubmitDao():
     def __init__(self, db_conn):
         self.db_conn = db_conn
 
-    def submit_assignment(self, student_id, question_pool_id, solution, flag):
-        query = "select qp.question_type_id from question_pool qp where qp.id= %s" % (question_pool_id)
-        records = self.db_conn.processquery(query=query, fetch=True)
-        if flag == 1:
-            if records[0]['question_type_id'] == 3:
-                query = "select class_id from student_class_mapping where student_id = %s" % (student_id)
-                records1 = self.db_conn.processquery(query=query, fetch=True)
-                query = "select assignment_id from question_pool where id = %s" % (question_pool_id)
-                records2 = self.db_conn.processquery(query=query, fetch=True)
-                query = "insert into student_assignment_map (assignment_id, class_id, student_id, " \
-                        "submission_datetime, response_sheet_link) values (%s, %s, %s,now(),'%s')" % (
-                            records2[0]['assignment_id'], records1[0]['class_id'], student_id, solution)
-                self.db_conn.processquery(query=query, fetch=False)
-            else:
-                query = "insert into quiz_response (student_id, question_pool_id, answer) values " \
-                        "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
-                self.db_conn.processquery(query=query, fetch=False)
-        else:
-            query = "insert into quiz_response (student_id, question_pool_id, answer) values " \
-                    "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
-            self.db_conn.processquery(query=query, fetch=False)
+    def submit_assignment(self, student_id, question_pool_id, solution):
+        query = "insert into quiz_response (student_id, question_pool_id, answer) values " \
+                "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
+        self.db_conn.processquery(query=query, fetch=False)
 
-    def submit_assignment_2(self, student_id: int, question_pool_id):
-        query = "select class_id from student_class_mapping where student_id = %s" % (student_id)
+    def submit_assignment_manual(self, student_id: int, question_pool_id, solution):
+        query = "insert into quiz_response (student_id, question_pool_id, response_sheet_link) values " \
+                "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
+        self.db_conn.processquery(query=query, fetch=False)
+
+    def submit_assignment3_student(self, student_id: int, question_pool_id: int):
+        query = "select assignment_id from question_pool where id=%s" % (question_pool_id)
         records1 = self.db_conn.processquery(query=query, fetch=True)
-        query = "select assignment_id from question_pool where id = %s" % (question_pool_id)
+        query = "select class_id from student_class_mapping where student_id = %s " % (student_id)
         records2 = self.db_conn.processquery(query=query, fetch=True)
-        query = "insert into student_assignment_map (assignment_id, class_id, student_id, " \
-                "submission_datetime) values (%s, %s, %s,now())" % (
-                    records2[0]['assignment_id'], records1[0]['class_id'], student_id)
+        query = "insert into student_assignment_map (assignment_id, class_id, student_id, submission_datetime)" \
+                " values (%s, %s, %s, now())" % (records1[0]['assignment_id'], records2[0]['class_id'], student_id)
         self.db_conn.processquery(query=query, fetch=False)
 
     def check_question_type(self, question_pool_id: int):
         query = "select qp.question_type_id from question_pool qp where qp.id= %s" % (question_pool_id)
         records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_student_assignment_solution(self, assignment_id: int, student_id: int):
+        query = "select question_pool_id, answer , response_sheet_link from quiz_response where question_pool_id in" \
+                " (select id from question_pool where assignment_id= %s) and student_id=%s" % (
+                    assignment_id, student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+
         return records
 
 

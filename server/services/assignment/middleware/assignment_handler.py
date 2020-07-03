@@ -81,13 +81,18 @@ class AssignmentHandler():
         transaction_mgr = TransactionalManager()
         db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
         assignment_dao = AssignmentSubmitDao(db_conn)
-        flag = 0
         for solutions in assignment_sol:
             question_type = assignment_dao.check_question_type(solutions['question_pool_id'])
-            if question_type[0]['question_type_id'] == 3:
-                flag = 1
-        for solutions in assignment_sol:
-            assignment_dao.submit_assignment(student_id, solutions['question_pool_id'], solutions['solution'], flag)
-        if flag == 0:
-            assignment_dao.submit_assignment_2(student_id, assignment_sol[0]['question_pool_id'])
+            if question_type[0]['question_type_id'] != 3:
+                assignment_dao.submit_assignment(student_id, solutions['question_pool_id'], solutions['solution'])
+            else:
+                assignment_dao.submit_assignment_manual(student_id, solutions['question_pool_id'], solutions['solution'])
+        assignment_dao.submit_assignment_student(student_id, assignment_sol[0]['question_pool_id'])
         transaction_mgr.save()
+
+    def get_student_assignment_solution(self, assignment_id: int, student_id: int):
+        transaction_mgr = TransactionalManager()
+        db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentSubmitDao(db_conn)
+        records = assignment_dao.get_student_assignment_solution(assignment_id, student_id)
+        return records

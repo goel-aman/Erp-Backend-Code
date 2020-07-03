@@ -12,7 +12,7 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
-from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentSubmit
+from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentSubmit, GetAssignment
 
 app = Flask(__name__)
 api = Api(app)
@@ -117,6 +117,9 @@ api.add_resource(AssignmentSubmit, "/assignmentsubmit/<int:student_id>")
 """
     post -> student login assignment submit responses
 """
-
+api.add_resource(GetAssignment, "/getstudentassignmentsolution/")
+"""
+    get -> teacher login assignment get student assignment solution
+"""
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

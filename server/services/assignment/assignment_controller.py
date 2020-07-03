@@ -110,3 +110,21 @@ class AssignmentSubmit(Resource):
         assignment_handler = AssignmentHandler()
         print('Making request to the handler to post the students data')
         assignment_handler.assignment_submit(student_id, assignment_sol)
+
+class GetAssignment(Resource):
+    """
+        Get student assignment solutions in teacher login
+        Param: Student Id, Assignment Id
+        Request:
+            path: api/vo/getstudentassignmentsolutoin/
+        Response:
+            return [ {question_pool_id : 1, answer: A},{question_pool_id : 1, answer: A}]
+            content type: application/json
+    """
+    def get(self):
+        assignment_id = request.args.get('assignment_id')
+        student_id = request.args.get('student_id')
+        assignment_handler= AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        records = assignment_handler.get_student_assignment_solution(assignment_id,student_id)
+        return jsonify(records)
