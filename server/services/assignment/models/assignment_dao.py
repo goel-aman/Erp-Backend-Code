@@ -175,7 +175,7 @@ class AssignmentSubmitDao():
                 "(%s, %s,'%s')" % (student_id, question_pool_id, solution)
         self.db_conn.processquery(query=query, fetch=False)
 
-    def submit_assignment3_student(self, student_id: int, question_pool_id: int):
+    def submit_assignment_student(self, student_id: int, question_pool_id: int):
         query = "select assignment_id from question_pool where id=%s" % (question_pool_id)
         records1 = self.db_conn.processquery(query=query, fetch=True)
         query = "select class_id from student_class_mapping where student_id = %s " % (student_id)
