@@ -231,7 +231,6 @@ class AssignmentDao:
         return return_val
 
 
-class CheckUser:
 class AssignmentSubmitDao():
     def __init__(self, db_conn):
         self.db_conn = db_conn
@@ -269,7 +268,7 @@ class AssignmentSubmitDao():
         return records
 
 
-class CheckEmployee():
+class CheckUser:
 
     def __init__(self, db_conn):
         self.db_conn = db_conn
@@ -411,6 +410,14 @@ class AssignmentView:
         :return:
         """
         return_val = None
+
+        # Check if the assignment exists
+        query = "select is_deleted from assignment where assignment_id=%s;" % assignment_id
+        records = self.db_conn.processquery(query=query, fetch=True)
+
+        if len(records) > 0 and records[0].get("is_deleted", "") == 1:
+            return_val = ("Assignment doesn't exists", False)
+            return return_val
 
         # Fetch assignment by assignment_id and teacher_id,
         query = "select * from student_assignment_map where teacher_id=%s and assignment_id=%s;" % (teacher_id, assignment_id)

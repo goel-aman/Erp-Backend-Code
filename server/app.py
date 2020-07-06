@@ -12,8 +12,7 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
-from services.assignment.assignment_controller import AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView
-from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentSubmit, GetAssignment
+from services.assignment.assignment_controller import AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView, AssignmentSubmit, GetAssignment
 
 app = Flask(__name__)
 api = Api(app)
@@ -115,22 +114,21 @@ api.add_resource(AssignmentByEmployee, "/assignment/employee/<int:employee_id>")
 """
 api.add_resource(TeacherAssignments, "/teacher/<int:teacher_id>/assignments")
 """
-    get     -> Teacher assignments list with details 
+    post    -> teacher or admin assignment upload 
 """
 api.add_resource(TeacherAssignmentDetailView, "/teacher/<int:teacher_id>/assignments/<int:assignment_id>")
-    post -> teacher or admin assignment upload
+"""
+    get     -> Teacher assignments list with details
 """
 api.add_resource(AssignmentSubmit, "/assignmentsubmit/<int:student_id>")
 """
-    post -> student login assignment submit responses
+    post    -> student login assignment submit responses
+    get     -> Teacher assignment with student list view
 """
 api.add_resource(GetAssignment, "/getstudentassignmentsolution/")
 """
-    get     -> Teacher assignment with student list view
+    get     -> teacher login assignment get student assignment solution
 """
 
-
-    get -> teacher login assignment get student assignment solution
-"""
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

@@ -3,8 +3,7 @@ import pandas as pd
 import re
 
 import utils
-from services.assignment.models.assignment_dao import AssignmentDao, CheckUser, AssignmentView
-from services.assignment.models.assignment_dao import AssignmentDao, CheckEmployee, AssignmentSubmitDao
+from services.assignment.models.assignment_dao import AssignmentDao, CheckUser, AssignmentView, AssignmentSubmitDao
 from core.lib.transactional_manager import TransactionalManager
 
 
