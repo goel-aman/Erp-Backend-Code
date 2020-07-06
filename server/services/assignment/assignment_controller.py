@@ -192,3 +192,45 @@ class TeacherAssignmentDetailView(Resource):
         return_val = assignment_view.AssignmentStudentDetailView(assignment_id, teacher_id)
 
         return jsonify(return_val)
+class AssignmentSubmit(Resource):
+    def post(self, student_id):
+        """
+                Post student assignment solutions given student id.
+                Param:
+                    student_id: Student id.
+                Request:
+                    path: api/v0/assignmentsubmit
+                    body: {
+
+                        question_pool_id : 2,
+                        solution : 3,
+                    },
+                    accept: application/json
+                Response:
+                    return  None, 201
+                    content-type: application/json
+        """
+        if not student_id:
+            return {"error": "mandatory parameter not supplied"}, 404
+        assignment_sol = request.json
+        assignment_handler = AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        assignment_handler.assignment_submit(student_id, assignment_sol)
+
+class GetAssignment(Resource):
+    """
+        Get student assignment solutions in teacher login
+        Param: Student Id, Assignment Id
+        Request:
+            path: api/vo/getstudentassignmentsolutoin/
+        Response:
+            return [ {question_pool_id : 1, answer: A},{question_pool_id : 1, answer: A}]
+            content type: application/json
+    """
+    def get(self):
+        assignment_id = request.args.get('assignment_id')
+        student_id = request.args.get('student_id')
+        assignment_handler= AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        records = assignment_handler.get_student_assignment_solution(assignment_id,student_id)
+        return jsonify(records)

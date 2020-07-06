@@ -4,12 +4,14 @@ import re
 
 import utils
 from services.assignment.models.assignment_dao import AssignmentDao, CheckUser, AssignmentView
+from services.assignment.models.assignment_dao import AssignmentDao, CheckEmployee, AssignmentSubmitDao
 from core.lib.transactional_manager import TransactionalManager
 
 
 class AssignmentHandler:
     """
     """
+
     def __init__(self):
         pass
 
@@ -148,3 +150,23 @@ class AssignmentViewHandler:
 
         transaction_manager.end()
         return return_val[0]
+
+    def assignment_submit(self, student_id: int, assignment_sol):
+        transaction_mgr = TransactionalManager()
+        db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentSubmitDao(db_conn)
+        for solutions in assignment_sol:
+            question_type = assignment_dao.check_question_type(solutions['question_pool_id'])
+            if question_type[0]['question_type_id'] != 3:
+                assignment_dao.submit_assignment(student_id, solutions['question_pool_id'], solutions['solution'])
+            else:
+                assignment_dao.submit_assignment_manual(student_id, solutions['question_pool_id'], solutions['solution'])
+        assignment_dao.submit_assignment_student(student_id, assignment_sol[0]['question_pool_id'])
+        transaction_mgr.save()
+
+    def get_student_assignment_solution(self, assignment_id: int, student_id: int):
+        transaction_mgr = TransactionalManager()
+        db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentSubmitDao(db_conn)
+        records = assignment_dao.get_student_assignment_solution(assignment_id, student_id)
+        return records
