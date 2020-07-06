@@ -12,7 +12,7 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
-from services.assignment.assignment_controller import UploadAssignmentByEmployee
+from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentQuestions, PendingAssignment, CompletedAssignment
 
 app = Flask(__name__)
 api = Api(app)
@@ -112,6 +112,21 @@ api.add_resource(TeacherDashboardLeaveCategoryRecord, "/teacherdashboardleavecat
 api.add_resource(UploadAssignmentByEmployee, "/assignment/employee/<int:employee_id>")
 """
     get -> teacher or admin assignment upload
+"""
+
+api.add_resource(AssignmentQuestions, "/assignment_ques/<int:assignment_id>")
+"""
+    get -> questions of a particular assignment
+"""
+
+api.add_resource(PendingAssignment, "/pending_assignment/<int:student_id>")
+"""
+    get -> pending assignment of a particular student
+"""
+
+api.add_resource(CompletedAssignment, "/completed_assignment/<int:student_id>/<int:subject_id>")
+"""
+    get -> completed assignment of a particular student of a particular subject 
 """
 
 if __name__ == "__main__":
