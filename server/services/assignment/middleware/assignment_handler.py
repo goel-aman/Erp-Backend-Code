@@ -3,19 +3,20 @@ import pandas as pd
 import re
 
 import utils
-from services.assignment.models.assignment_dao import AssignmentDao, CheckUser, AssignmentView, AssignmentSubmitDao
+from services.assignment.models.assignment_dao import AssignmentDao, CheckEmployee, AssignmentQuestionsDao
 from core.lib.transactional_manager import TransactionalManager
 
 
-class AssignmentHandler:
+class AssignmentHandler():
     """
     """
 
     def __init__(self):
         pass
 
-    def checkUser(self, employee_id="", teacher_id=""):
+    def checkEmployee(self, employee_id):
         """
+
         :return:
         """
         return_val = None
@@ -23,20 +24,14 @@ class AssignmentHandler:
         transaction_mgr = TransactionalManager()
         db_conn = transaction_mgr.GetDatabaseConnection("READ")
 
-        if employee_id != "":
-            check = CheckUser(db_conn)
-            return_val = check.checkEmployee(employee_id)
-            return_msg = return_val[0]
-        elif teacher_id != "":
-            check = CheckUser(db_conn)
-            return_val = check.checkTeacher(teacher_id)
-            return_msg = return_val[0]
-
+        check = CheckEmployee(db_conn)
+        return_val = check.checkEmployee(employee_id)
+        return_msg = return_val[0]
         transaction_mgr.end()
 
         return (return_msg, True) if return_val[1] else (return_msg, False)
 
-    def uploadAssignment(self, user_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks):
+    def uploadAssignment(self, employee_id, title, description, deadline, subject, class_, section, list_of_files):
         """
         :return:
         """
@@ -54,25 +49,21 @@ class AssignmentHandler:
             if file_count <= len(list_of_files) - 2:
                 comma_files += ", "
 
-        assignment_dao = AssignmentDao(db_conn, class_=class_, section=section, subject=subject, \
-                                       comma_files=comma_files, title=title, description=description, \
-                                       deadline=deadline, user_id=user_id)
+        assignment_dao = AssignmentDao(db_conn, class_, section, subject, comma_files, title, description, deadline,
+                                       employee_id)
 
         for file in list_of_files:
-            # Fetching assignment type,
             type = re.search('__[\w]+?__', file)
-            type = file[type.start(0)+2:type.end(0)-2]
+            type = file[type.start(0) + 2:type.end(0) - 2]
             file_ext = file.split('.')[1]
-            # Fetching file number for manual marks,
-            file_num = re.search('_file\d{1}?_', file)
-            file_num = file[file_num.start(0)+1 : file_num.end(0)-1]
             if type == "manual":
-                mark = manual_marks.get(file_num, "")
-                return_val = assignment_dao.uploadManual(file, comma_files, mark, type)
+                return_val = ("Inserted Manual Document", True)
             elif type == "subjective" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadSubjective(file, comma_files, type)
+                return_val = assignment_dao.uploadSubjective(employee_id, title, description, deadline, file,
+                                                             comma_files, type)
             elif type == "mcq" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadMCQ(file, comma_files, type)
+                return_val = assignment_dao.uploadMCQ(employee_id, title, description, deadline, file, comma_files,
+                                                      type)
             # Break if any one fails
             if return_val[1] == True:
                 return_msg += " " + return_val[0]
@@ -86,86 +77,60 @@ class AssignmentHandler:
         transaction_mgr.end()
         return return_msg
 
-    def deleteAssignment(self, user_id, assignment_id):
-        """
+    def get_assignment(self, assignment_id):
 
-        :param employee_id:
-        :param assignment_id:
-        :return:
-        """
+        # Creating a connection with the database
         transaction_mgr = TransactionalManager()
         db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentQuestionsDao(db_conn)
 
-        assignment_dao = AssignmentDao(db_conn)
-        return_val = assignment_dao.deleteAssignment(user_id, assignment_id)
+        # Calling the DAO
+        question_paper = assignment_dao.get_assignment_dao(assignment_id)
 
-        if return_val[1]:
-            transaction_mgr.save()
-            return return_val
+        # To store the non-null or non-empty records
+        modified_question_paper = []
+        for record in question_paper:
+            new_record = {}
+            for key, value in record.items():
+                if value is not None and value != "":
+                    new_record[key] = value
+            modified_question_paper.append(new_record)
 
-        transaction_mgr.end()
-        return return_val
+        return modified_question_paper
 
+    def get_pending_assignment_handler(self, student_id):
 
-class AssignmentViewHandler:
-    """
-    """
-    def __init__(self):
-        pass
-
-    def TeacherAssignmentView(self, user_id, teacher_id, class_, section, subject):
-        """
-        :return:
-        """
-        return_val = None
-        transaction_manager = TransactionalManager()
-        db_conn = transaction_manager.GetDatabaseConnection("READWRITE")
-
-        assignment_view = AssignmentView(db_conn)
-        return_val = assignment_view.assignmentByClassSubjectId(user_id, teacher_id, class_, section, subject)
-
-        if return_val[1] == True:
-            transaction_manager.save()
-            return return_val[0]
-
-        transaction_manager.end()
-        return return_val[0]
-
-    def AssignmentStudentDetailView(self, assignment_id, teacher_id):
-        """
-        :param assignment_id:
-        :return:
-        """
-        return_val = None
-        transaction_manager = TransactionalManager()
-        db_conn = transaction_manager.GetDatabaseConnection("READ")
-
-        assignment_view = AssignmentView(db_conn)
-        return_val = assignment_view.studentSubmissionsViewByAssignment(assignment_id, teacher_id)
-
-        if return_val[1] == True:
-            transaction_manager.save()
-            return return_val[0]
-
-        transaction_manager.end()
-        return return_val[0]
-
-    def assignment_submit(self, student_id: int, assignment_sol):
+        # Creating a connection with the database
         transaction_mgr = TransactionalManager()
         db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
-        assignment_dao = AssignmentSubmitDao(db_conn)
-        for solutions in assignment_sol:
-            question_type = assignment_dao.check_question_type(solutions['question_pool_id'])
-            if question_type[0]['question_type_id'] != 3:
-                assignment_dao.submit_assignment(student_id, solutions['question_pool_id'], solutions['solution'])
-            else:
-                assignment_dao.submit_assignment_manual(student_id, solutions['question_pool_id'], solutions['solution'])
-        assignment_dao.submit_assignment_student(student_id, assignment_sol[0]['question_pool_id'])
-        transaction_mgr.save()
+        assignment_dao = AssignmentQuestionsDao(db_conn)
 
-    def get_student_assignment_solution(self, assignment_id: int, student_id: int):
+        # Calling the DAO
+        pending_assignment = assignment_dao.get_pending_assignments_dao(student_id)
+
+        # Modifying the date to appropriate format
+        for record in pending_assignment:
+            record['initiation_date'] = record['initiation_date'].strftime("%Y-%m-%d")
+            record['submission_date'] = record['submission_date'].strftime("%Y-%m-%d")
+
+        return pending_assignment
+
+    def get_completed_assignment_handler(self, student_id, subject_id):
+
+        # Creating a connection with the database
         transaction_mgr = TransactionalManager()
         db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
-        assignment_dao = AssignmentSubmitDao(db_conn)
-        records = assignment_dao.get_student_assignment_solution(assignment_id, student_id)
-        return records
+        assignment_dao = AssignmentQuestionsDao(db_conn)
+
+        # Calling the DAO
+        completed_assignment = assignment_dao.get_completed_assignments_dao(student_id, subject_id)
+
+        # Modifying the date to appropriate format and adding the percentage
+        for record in completed_assignment:
+            record['initiation_date'] = record['initiation_date'].strftime("%Y-%m-%d")
+            record['deadline'] = record['deadline'].strftime("%Y-%m-%d")
+            record['submission_datetime'] = record['submission_datetime'].strftime("%Y-%m-%d")
+            record['total_marks'] = float("{:.2f}".format(record['total_marks']))
+            record['percentage'] = float("{:.2f}".format(record['scored_marks']*100/record['total_marks']))
+
+        return completed_assignment
