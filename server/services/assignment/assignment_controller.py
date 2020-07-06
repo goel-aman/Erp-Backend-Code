@@ -1,15 +1,18 @@
 from datetime import datetime, date
 from flask import request, jsonify
 from flask_restful import Resource
-import os
+import os, re
 from werkzeug.utils import secure_filename
 
 import utils
-from services.assignment.middleware.assignment_handler import AssignmentHandler
+from services.assignment.middleware.assignment_handler import AssignmentHandler, AssignmentViewHandler
 
 
-class UploadAssignmentByEmployee(Resource):
-    """This resource will be responsible for uploading, processing and submitting assignments by employee or students."""
+class AssignmentByEmployee(Resource):
+    """
+        This resource will be responsible for uploading,
+        processing and submitting assignments by employee or students.
+    """
 
     def post(self, employee_id):
         """
@@ -54,16 +57,23 @@ class UploadAssignmentByEmployee(Resource):
         manual_marks = request_payload.get("manual_marks", "")
         try:
             assignment_type = eval(assignment_type)
-            manual_marks = eval(manual_marks)
         except:
-            return "Invalid Marks or Assignment Type"
+            return "Invalid Assignment Type"
+
+        # Check manual marks if manual type is present
+        for value in assignment_type.values():
+            if value == "manual" and manual_marks == "":
+                manual_marks = False
+                return "Invalid Marks"
 
         # Check if employee exists
-        check_emp = AssignmentHandler().checkEmployee(employee_id)
+        check_emp = AssignmentHandler().checkUser(employee_id=employee_id)
         if check_emp[1] == False:
-            return jsonify(check_emp[0])
+            return jsonify("Invalid User")
+        user_id = check_emp[0]
 
-        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject, section=section, class_=class_, assignment_type=assignment_type, manual_marks=manual_marks):
+        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject,
+                                   section=section, class_=class_, assignment_type=assignment_type, user_id=user_id):
             try:
                 deadline = datetime.strptime(deadline, "%Y-%m-%d")
             except ValueError:
@@ -74,8 +84,9 @@ class UploadAssignmentByEmployee(Resource):
             if len(assignment_type) == len(request.files):
                 random = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
                 for i in range(len(request.files)):
-                    fh = request.files.get("file" + str(i+1))
-                    assignment_file = random + "_file" + str(i+1) + "__" + assignment_type.get("file"+str(i+1)).lower() + "__" + secure_filename(fh.filename)
+                    fh = request.files.get("file" + str(i + 1))
+                    assignment_file = random + "_file" + str(i + 1) + "__" + assignment_type.get(
+                        "file" + str(i + 1)).lower() + "__" + secure_filename(fh.filename)
                     fh.save(assignment_file)
                     list_of_files.append(assignment_file)
             else:
@@ -89,9 +100,95 @@ class UploadAssignmentByEmployee(Resource):
                     return jsonify("Accepted file types are .pdf, .docx, .doc, .xlsx file")
 
             assignment_handler = AssignmentHandler()
-            return_val = assignment_handler.uploadAssignment(employee_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks)
+            return_val = assignment_handler.uploadAssignment(user_id, title, description, deadline, subject, class_,
+                                                             section, list_of_files, manual_marks)
 
             return jsonify("File saved" + return_val)
         else:
             return jsonify("Some fields are missing")
 
+    def delete(self, employee_id):
+        """
+        Example
+        api endpoint: /assignment/employee/730?assignment_id=111
+        :param employee_id:
+        :return:
+        """
+        request_payload = request.json
+        assignment_id = request_payload.get("assignment_id", "")
+
+        # Check for employee existence
+        check_emp = AssignmentHandler().checkUser(employee_id=employee_id)
+        if check_emp[1] == False:
+            return jsonify("Invalid User")
+        user_id = check_emp[0]
+
+        # Check for all the field values are present
+        if utils.checkForAllFields(employee_id=employee_id):
+            assign_handler = AssignmentHandler()
+            return_val = assign_handler.deleteAssignment(user_id, assignment_id)
+            return jsonify(return_val[0])
+        else:
+            return jsonify("Some fields are missing!")
+
+
+class TeacherAssignments(Resource):
+    """
+        This resource will handle the assignment list for a particular employee,
+    """
+    def get(self, teacher_id):
+        """
+        :param teacher_id:
+        :return:
+        """
+        request_payload = request.json
+        teacher_id = teacher_id
+        class_ = request.json.get("class", "")
+        subject = request.json.get("subject", "")
+
+        class_section = re.search(r"^\d{1,2}\-\w{1}$", class_)
+        if class_section is None:
+            return jsonify("No such Class")
+        class_section = class_section.group(0).split("-")
+        class_ = class_section[0]
+        section = class_section[1]
+
+        if not utils.checkForAllFields(teacher_id=teacher_id, class_=class_, subject=subject, section=section):
+            return jsonify("Some fields are missing")
+
+        # Check if employee exists
+        check_emp = AssignmentHandler().checkUser(teacher_id=teacher_id)
+        if check_emp[1] == False:
+            return jsonify("Invalid User")
+        user_id = check_emp[0]
+
+        assignment_view = AssignmentViewHandler()
+        return_val = assignment_view.TeacherAssignmentView(user_id, teacher_id, class_, section, subject)
+        print(return_val)
+
+        return jsonify(return_val)
+
+
+class TeacherAssignmentDetailView(Resource):
+    """
+    Resource to list all the students details,
+    who has submitted a particular an assignment,
+    """
+    def get(self, teacher_id, assignment_id):
+        """
+        :param teacher_id:
+        :param assignment_id:
+        :return:
+        """
+        if not utils.checkForAllFields(assignment_id=assignment_id, teacher_id=teacher_id):
+            return jsonify(teacher_id, assignment_id)
+
+        # Check if employee exists
+        check_emp = AssignmentHandler().checkUser(teacher_id=teacher_id)
+        if check_emp[1] == False:
+            return jsonify("Invalid User")
+
+        assignment_view = AssignmentViewHandler()
+        return_val = assignment_view.AssignmentStudentDetailView(assignment_id, teacher_id)
+
+        return jsonify(return_val)
