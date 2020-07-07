@@ -13,7 +13,8 @@ from services.attendance.attendance_controller import StudentAttendance, Student
 from services.leave_management.leave_controller import StudentLeaves
 
 from services.assignment.assignment_controller import AssignmentQuestions, PendingAssignment, CompletedAssignment, \
-                                                        AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView, AssignmentSubmit, GetAssignment
+                                                        AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView, \
+                                                        AssignmentSubmit, GetAssignment, AssignmentHistory
 
 app = Flask(__name__)
 api = Api(app)
@@ -80,7 +81,6 @@ api.add_resource(TeacherAttendanceByName, "/attendance/teacher/name/<teacher_nam
 api.add_resource(TeacherAttendanceReport, "/attendance/teacher/report")
 api.add_resource(TeacherAttendanceReportByName, "/attendance/teacher/report/<int:emp_id>")
 
-
 api.add_resource(SubmitLeave, "/submitleave/<int:user_id>")
 """
     get -> teacher login (leave -> apply leave)
@@ -146,5 +146,9 @@ api.add_resource(CompletedAssignment, "/completed_assignment/<int:student_id>/<i
     get -> completed assignment of a particular student of a particular subject 
 """
 
+api.add_resource(AssignmentHistory, "/assignmenthistory/<int:student_id>")
+"""
+    get -> student login assignment submitted history
+"""
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

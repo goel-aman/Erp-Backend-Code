@@ -267,6 +267,74 @@ class AssignmentSubmitDao():
 
         return records
 
+    def get_student_teacher_name(self,student_id: int):
+        query = "select emp.name from employee emp inner join " \
+                "(select t.employee_emp_id, tcm.teacher_id, tcm.class_id from teacher_class_mapping tcm " \
+                "inner join teachers t on t.teacher_id=tcm.teacher_id) as gol on " \
+                "gol.employee_emp_id=emp.emp_id where class_id in (select class_id from student_class_mapping " \
+                "where student_id=%s)" % (student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_student_assignment_count(self, student_id: int):
+        query = "select sub.name, gol.no_of_assignments from subject sub left outer join " \
+                "(select a.subject_id, count(sam.student_id) as no_of_assignments from student_assignment_map sam " \
+                "inner join assignment a on a.assignment_id=sam.assignment_id where student_id=%s group by" \
+                " a.subject_id) as gol on gol.subject_id=sub.subject_id where sub.subject_id in " \
+                "(select subject_id from teacher_class_mapping where class_id in " \
+                "(select class_id from student_class_mapping where student_id=%s))" %(student_id,student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_student_subject_list(self, student_id: int):
+        query = "select s.name, tcm.subject_id,e.name as teacher_name, count(gol.subject_id) as number_of_assignments" \
+                " from teacher_class_mapping tcm " \
+                "left outer join (select subject_id from assignment) as gol on tcm.subject_id=gol.subject_id " \
+                "inner join subject s on s.subject_id=tcm.subject_id inner join " \
+                "(select teachers.teacher_id, employee.name from teachers inner join employee" \
+                " on employee.emp_id=teachers.employee_emp_id) as e on e.teacher_id=tcm.teacher_id " \
+                " where tcm.class_id in (select class_id from student_class_mapping where student_id=%s) " \
+                "GROUP by tcm.subject_id" % (student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_student_late_assignments(self, student_id: int):
+        query = "select sub.name, count(gol.late_submission) as late_submission from subject sub" \
+                " left outer join (select s.name, count(sam.assignment_id) as late_submission from " \
+                "student_assignment_map sam inner join assignment a on a.assignment_id=sam.assignment_id " \
+                "inner join subject s on s.subject_id=a.subject_id where" \
+                " date(sam.submission_datetime) > a.submission_date and sam.student_id=%s " \
+                "group by a.subject_id,sam.assignment_id) as gol on gol.name=sub.name " \
+                "where sub.subject_id in (select subject_id from teacher_class_mapping where " \
+                "class_id in (select class_id from student_class_mapping where student_id=%s))" \
+                " group by sub.subject_id" % (student_id, student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_student_average_marks(self, student_id: int):
+        query = "select sub.name, gol.average_marks from subject sub left outer join " \
+                "(select sam.student_id,a.subject_id, qp.assignment_id, (sum(qr.marks_awarded)/sam.marks)*100 " \
+                "as average_marks from quiz_response qr inner join question_pool qp " \
+                "on qp.id=qr.question_pool_id inner join assignment a on a.assignment_id= qp.assignment_id " \
+                "inner join student_assignment_map sam on sam.student_id=qr.student_id " \
+                "and sam.assignment_id=a.assignment_id where sam.student_id=%s group by 2)" \
+                " as gol on gol.subject_id=sub.subject_id where sub.subject_id " \
+                "in (select subject_id from teacher_class_mapping where class_id in " \
+                "(select class_id from student_class_mapping where student_id=%s))" % (student_id,student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
+    def get_assignment_status(self, student_id: int):
+        query = "select sub.name, gol.is_evaluated from subject sub left OUTER join " \
+                "(select a.subject_id, sam.is_evaluated, sam.student_id from student_assignment_map sam " \
+                "inner JOIN assignment a on a.assignment_id=sam.assignment_id where sam.student_id=%s " \
+                "and sam.is_evaluated=0 group by a.subject_id)" \
+                " as gol on gol.subject_id=sub.subject_id where sub.subject_id in (select subject_id " \
+                "from teacher_class_mapping where class_id in (select class_id from student_class_mapping " \
+                "where student_id=%s)) " % (student_id,student_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        return records
+
 
 class CheckUser:
 
