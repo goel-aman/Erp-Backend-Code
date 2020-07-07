@@ -197,7 +197,7 @@ class AssignmentSubmitDao():
 
         return records
 
-    def get_student_teacher_name(self,student_id: int):
+    def get_student_teacher_name(self, student_id: int):
         query = "select emp.name from employee emp inner join " \
                 "(select t.employee_emp_id, tcm.teacher_id, tcm.class_id from teacher_class_mapping tcm " \
                 "inner join teachers t on t.teacher_id=tcm.teacher_id) as gol on " \
@@ -212,7 +212,7 @@ class AssignmentSubmitDao():
                 "inner join assignment a on a.assignment_id=sam.assignment_id where student_id=%s group by" \
                 " a.subject_id) as gol on gol.subject_id=sub.subject_id where sub.subject_id in " \
                 "(select subject_id from teacher_class_mapping where class_id in " \
-                "(select class_id from student_class_mapping where student_id=%s))" %(student_id,student_id)
+                "(select class_id from student_class_mapping where student_id=%s))" % (student_id, student_id)
         records = self.db_conn.processquery(query=query, fetch=True)
         return records
 
@@ -250,7 +250,7 @@ class AssignmentSubmitDao():
                 "and sam.assignment_id=a.assignment_id where sam.student_id=%s group by 2)" \
                 " as gol on gol.subject_id=sub.subject_id where sub.subject_id " \
                 "in (select subject_id from teacher_class_mapping where class_id in " \
-                "(select class_id from student_class_mapping where student_id=%s))" % (student_id,student_id)
+                "(select class_id from student_class_mapping where student_id=%s))" % (student_id, student_id)
         records = self.db_conn.processquery(query=query, fetch=True)
         return records
 
@@ -261,10 +261,27 @@ class AssignmentSubmitDao():
                 "and sam.is_evaluated=0 group by a.subject_id)" \
                 " as gol on gol.subject_id=sub.subject_id where sub.subject_id in (select subject_id " \
                 "from teacher_class_mapping where class_id in (select class_id from student_class_mapping " \
-                "where student_id=%s)) " % (student_id,student_id)
+                "where student_id=%s)) " % (student_id, student_id)
         records = self.db_conn.processquery(query=query, fetch=True)
         return records
 
+    def submit_marks(self, question_pool_id, student_id, marks_awarded):
+        query = "update quiz_response set marks_awarded=%s where question_pool_id =%s " \
+                "and student_id=%s" % (marks_awarded, question_pool_id, student_id)
+        self.db_conn.processquery(query=query, fetch=False)
+
+    def submit_marks_manual(self, question_pool_id, student_id, marks_awarded, evaluated_sheet_link):
+        query = "update quiz_response set marks_awarded=%s,evaluated_sheet_link='%s' " \
+                "where question_pool_id =%s " \
+                "and student_id=%s" % (marks_awarded, evaluated_sheet_link, question_pool_id, student_id)
+        self.db_conn.processquery(query=query, fetch=False)
+
+    def submit_marks_in_map(self, total,teacher_id, question_pool_id, student_id):
+        query = "select assignment_id from question_pool where id=%s" % (question_pool_id)
+        records = self.db_conn.processquery(query=query, fetch=True)
+        query = "update student_assignment_map set marks= %s, teacher_id=%s, is_evaluated=1,evaluated_timestamp=now()" \
+                " where assignment_id=%s and student_id=%s" %(total, teacher_id, records[0]['assignment_id'], student_id)
+        self.db_conn.processquery(query=query, fetch=False)
 
 class CheckEmployee():
 

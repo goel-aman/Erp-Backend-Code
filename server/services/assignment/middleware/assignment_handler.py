@@ -111,11 +111,28 @@ class AssignmentHandler():
         record6 = dict()
         for index in range(0, len(records1)):
             records7 = dict()
-            records7.update({"teacher-name": records1[index]['name'], "assignment-count": records2[index]['no_of_assignments'],
-                          "late-submission": records3[index]['late_submission'],
-                          "average_marks": records4[index]['average_marks'], "status": records5[index]['is_evaluated']})
-            record6[records2[index]['name']]= records7
+            records7.update(
+                {"teacher-name": records1[index]['name'], "assignment-count": records2[index]['no_of_assignments'],
+                 "late-submission": records3[index]['late_submission'],
+                 "average_marks": records4[index]['average_marks'], "status": records5[index]['is_evaluated']})
+            record6[records2[index]['name']] = records7
 
-        return(record6)
-        #return {"teacher_name": records1, "assignment_count": records2, "late_assignment": records3,
-          #      "average_marks": records4, "assignment_status": records5}
+        return (record6)
+
+    def post_assignment_marks(self, teacher_id: int, student_marks):
+        transaction_mgr = TransactionalManager()
+        db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentSubmitDao(db_conn)
+        total = 0
+        question_pool_id = student_marks[0]['question_pool_id']
+        for marks in student_marks:
+            total = total + int(marks['marks'])
+            question_type = assignment_dao.check_question_type(marks['question_pool_id'])
+            if question_type[0]['question_type_id'] != 3:
+                assignment_dao.submit_marks(marks['question_pool_id'], marks['student_id'], marks['marks'])
+            else:
+                assignment_dao.submit_marks_manual(marks['question_pool_id'], marks['student_id'], marks['marks'],
+                                                   marks['evaluated_sheet_link'])
+        assignment_dao.submit_marks_in_map(total,teacher_id, question_pool_id, student_marks[0]['student_id'])
+
+        transaction_mgr.save()
