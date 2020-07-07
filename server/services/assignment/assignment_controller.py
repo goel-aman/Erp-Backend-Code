@@ -67,13 +67,13 @@ class AssignmentByEmployee(Resource):
                 return "Invalid Marks"
 
         # Check if employee exists
-        check_emp = AssignmentHandler().checkUser(employee_id=employee_id)
+        check_emp = AssignmentHandler().check_user(employee_id=employee_id)
         if check_emp[1] == False:
             return jsonify("Invalid User")
         user_id = check_emp[0]
 
-        if utils.checkForAllFields(title=title, description=description, deadline=deadline, subject=subject,
-                                   section=section, class_=class_, assignment_type=assignment_type, user_id=user_id):
+        if utils.check_for_all_fields(title=title, description=description, deadline=deadline, subject=subject,
+                                      section=section, class_=class_, assignment_type=assignment_type, user_id=user_id):
             try:
                 deadline = datetime.strptime(deadline, "%Y-%m-%d")
             except ValueError:
@@ -94,14 +94,14 @@ class AssignmentByEmployee(Resource):
 
             # Check for file types, if fails delete all of them,
             for file in list_of_files:
-                if not utils.checkFileType(file):
+                if not utils.check_file_type(file):
                     for f in list_of_files:
                         os.remove(f)
                     return jsonify("Accepted file types are .pdf, .docx, .doc, .xlsx file")
 
             assignment_handler = AssignmentHandler()
-            return_val = assignment_handler.uploadAssignment(user_id, title, description, deadline, subject, class_,
-                                                             section, list_of_files, manual_marks)
+            return_val = assignment_handler.upload_assignment(user_id, title, description, deadline, subject, class_,
+                                                              section, list_of_files, manual_marks)
 
             return jsonify("File saved" + return_val)
         else:
@@ -118,15 +118,15 @@ class AssignmentByEmployee(Resource):
         assignment_id = request_payload.get("assignment_id", "")
 
         # Check for employee existence
-        check_emp = AssignmentHandler().checkUser(employee_id=employee_id)
+        check_emp = AssignmentHandler().check_user(employee_id=employee_id)
         if check_emp[1] == False:
             return jsonify("Invalid User")
         user_id = check_emp[0]
 
         # Check for all the field values are present
-        if utils.checkForAllFields(employee_id=employee_id):
+        if utils.check_for_all_fields(employee_id=employee_id):
             assign_handler = AssignmentHandler()
-            return_val = assign_handler.deleteAssignment(user_id, assignment_id)
+            return_val = assign_handler.delete_assignment(user_id, assignment_id)
             return jsonify(return_val[0])
         else:
             return jsonify("Some fields are missing!")
@@ -153,17 +153,17 @@ class TeacherAssignments(Resource):
         class_ = class_section[0]
         section = class_section[1]
 
-        if not utils.checkForAllFields(teacher_id=teacher_id, class_=class_, subject=subject, section=section):
+        if not utils.check_for_all_fields(teacher_id=teacher_id, class_=class_, subject=subject, section=section):
             return jsonify("Some fields are missing")
 
         # Check if employee exists
-        check_emp = AssignmentHandler().checkUser(teacher_id=teacher_id)
+        check_emp = AssignmentHandler().check_user(teacher_id=teacher_id)
         if check_emp[1] == False:
             return jsonify("Invalid User")
         user_id = check_emp[0]
 
         assignment_view = AssignmentViewHandler()
-        return_val = assignment_view.TeacherAssignmentView(user_id, teacher_id, class_, section, subject)
+        return_val = assignment_view.teacher_assignment_view(user_id, teacher_id, class_, section, subject)
         print(return_val)
 
         return jsonify(return_val)
@@ -180,18 +180,20 @@ class TeacherAssignmentDetailView(Resource):
         :param assignment_id:
         :return:
         """
-        if not utils.checkForAllFields(assignment_id=assignment_id, teacher_id=teacher_id):
+        if not utils.check_for_all_fields(assignment_id=assignment_id, teacher_id=teacher_id):
             return jsonify(teacher_id, assignment_id)
 
         # Check if employee exists
-        check_emp = AssignmentHandler().checkUser(teacher_id=teacher_id)
+        check_emp = AssignmentHandler().check_user(teacher_id=teacher_id)
         if check_emp[1] == False:
             return jsonify("Invalid User")
 
         assignment_view = AssignmentViewHandler()
-        return_val = assignment_view.AssignmentStudentDetailView(assignment_id, teacher_id)
+        return_val = assignment_view.assignment_student_detail_view(assignment_id, teacher_id)
 
         return jsonify(return_val)
+
+
 class AssignmentSubmit(Resource):
     def post(self, student_id):
         """
@@ -341,7 +343,7 @@ class AssignmentHistory(Resource):
     def get(self, student_id):
         if not student_id:
             return {"error": "mandatory parameter not supplied "}, 404
-        assignment_handler = AssignmentHandler()
+        assignment_handler = AssignmentViewHandler()
         print('Making request to the handler to post the students data')
         records = assignment_handler.get_assignment_history(student_id)
         return jsonify(records)

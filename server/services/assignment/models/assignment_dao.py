@@ -51,7 +51,7 @@ class AssignmentDao:
                             c_id, self.user_id)
                 records = self.db_conn.processquery(query=query, fetch=False)
 
-    def uploadManual(self, file, list_of_files, mark, ques_type):
+    def upload_manual(self, file, list_of_files, mark, ques_type):
         return_val = None
         # Query Question Type to fetch the Id with the type,
         query = "select id from question_type where question_type='%s';" % ques_type
@@ -78,7 +78,7 @@ class AssignmentDao:
         return_val = "Inserted Manual document"
         return return_val, True
 
-    def uploadSubjective(self, file, list_of_files, ques_type):
+    def upload_subjective(self, file, list_of_files, ques_type):
         # try:
         # Query Question Type to fetch the Id with the type,
         query = "select id from question_type where question_type='%s';" % ques_type
@@ -123,7 +123,7 @@ class AssignmentDao:
         # except:
         #     return "Some error happened!"
 
-    def uploadMCQ(self, file, list_of_files, type):
+    def upload_MCQ(self, file, list_of_files, type):
         # try:
         # Query Question Type to fetch the Id with the type,
         query = "select id from question_type where question_type='%s';" % (type)
@@ -199,7 +199,7 @@ class AssignmentDao:
         return_val = " Inserted MCQ document"
         return (return_val, True)
 
-    def deleteAssignment(self, user_id, assignment_id):
+    def delete_assignment_dao(self, user_id, assignment_id):
         """
         :param employee_id: employee who is deleting
         :param assignment_id: which assignment she is deleting
@@ -231,7 +231,9 @@ class AssignmentDao:
         return return_val
 
 
-class AssignmentSubmitDao():
+class AssignmentSubmitDao:
+    """
+    """
     def __init__(self, db_conn):
         self.db_conn = db_conn
 
@@ -341,7 +343,7 @@ class CheckUser:
     def __init__(self, db_conn):
         self.db_conn = db_conn
 
-    def checkEmployee(self, employee_id):
+    def check_employee(self, employee_id):
         """
         :param employee_id:
         :return:
@@ -355,7 +357,7 @@ class CheckUser:
             return_val = (records[0].get("user_id", ""), True)
             return return_val
         else:
-            teacher_ = self.checkTeacher(employee_id)
+            teacher_ = self.check_teacher(employee_id)
             if teacher_[1]:
                 return_val = (teacher_[0], True)
                 return return_val
@@ -363,7 +365,7 @@ class CheckUser:
         return_val = ("User doesn't exist", False)
         return return_val
 
-    def checkTeacher(self, teacher_id):
+    def check_teacher(self, teacher_id):
         """
         :param teacher_id:
         :return: (user_id, Bool)
@@ -391,7 +393,7 @@ class AssignmentView:
     def __init__(self, db_conn):
         self.db_conn = db_conn
 
-    def assignmentByClassSubjectId(self, user_id, teacher_id, class_, section, subject):
+    def assignment_by_class_subject_id(self, user_id, teacher_id, class_, section, subject):
         """
         :param teacher_id:
         :param class_id:
@@ -472,7 +474,7 @@ class AssignmentView:
 
         return (return_dict, False)
 
-    def studentSubmissionsViewByAssignment(self, assignment_id, teacher_id):
+    def student_submissions_view_by_assignment(self, assignment_id, teacher_id):
         """
         :param assignment_id:
         :return:
@@ -533,13 +535,14 @@ class AssignmentView:
 
         return (return_dict, False)
 
-class AssignmentQuestionsDao():
 
+class AssignmentQuestionsDao():
+    """
+    """
     def __init__(self, db_conn):
         self.db_conn = db_conn
 
     def get_assignment_dao(self, assignment_id):
-
         # To get all the questions of a particular assignment
         query = "select question_pool.id, question_type, question, marks, " \
                 "choice1, choice2, choice3, choice4, choice5, choice6 " \

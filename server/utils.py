@@ -23,7 +23,7 @@ def GetCummulativeDates() -> Tuple[str, str]:
     return session_start_date, today.isoformat()
 
 
-def checkForAllFields(**kwargs) -> bool:
+def check_for_all_fields(**kwargs) -> bool:
     """
     Checks for all the field values
     :param kwargs:
@@ -36,7 +36,7 @@ def checkForAllFields(**kwargs) -> bool:
     return True
 
 
-def checkFileType(file) -> bool:
+def check_file_type(file) -> bool:
     """
     Checks for the file type using headers
     :param headers: byte string

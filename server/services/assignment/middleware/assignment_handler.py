@@ -14,7 +14,7 @@ class AssignmentHandler:
     def __init__(self):
         pass
 
-    def checkUser(self, employee_id="", teacher_id=""):
+    def check_user(self, employee_id="", teacher_id=""):
         """
         :return:
         """
@@ -25,18 +25,18 @@ class AssignmentHandler:
 
         if employee_id != "":
             check = CheckUser(db_conn)
-            return_val = check.checkEmployee(employee_id)
+            return_val = check.check_employee(employee_id)
             return_msg = return_val[0]
         elif teacher_id != "":
             check = CheckUser(db_conn)
-            return_val = check.checkTeacher(teacher_id)
+            return_val = check.check_teacher(teacher_id)
             return_msg = return_val[0]
 
         transaction_mgr.end()
 
         return (return_msg, True) if return_val[1] else (return_msg, False)
 
-    def uploadAssignment(self, user_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks):
+    def upload_assignment(self, user_id, title, description, deadline, subject, class_, section, list_of_files, manual_marks):
         """
         :return:
         """
@@ -68,11 +68,11 @@ class AssignmentHandler:
             file_num = file[file_num.start(0)+1 : file_num.end(0)-1]
             if type == "manual":
                 mark = manual_marks.get(file_num, "")
-                return_val = assignment_dao.uploadManual(file, comma_files, mark, type)
+                return_val = assignment_dao.upload_manual(file, comma_files, mark, type)
             elif type == "subjective" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadSubjective(file, comma_files, type)
+                return_val = assignment_dao.upload_subjective(file, comma_files, type)
             elif type == "mcq" and file_ext.startswith("xls"):
-                return_val = assignment_dao.uploadMCQ(file, comma_files, type)
+                return_val = assignment_dao.upload_MCQ(file, comma_files, type)
             # Break if any one fails
             if return_val[1] == True:
                 return_msg += " " + return_val[0]
@@ -86,7 +86,7 @@ class AssignmentHandler:
         transaction_mgr.end()
         return return_msg
 
-    def deleteAssignment(self, user_id, assignment_id):
+    def delete_assignment(self, user_id, assignment_id):
         """
 
         :param employee_id:
@@ -97,7 +97,7 @@ class AssignmentHandler:
         db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
 
         assignment_dao = AssignmentDao(db_conn)
-        return_val = assignment_dao.deleteAssignment(user_id, assignment_id)
+        return_val = assignment_dao.delete_assignment_dao(user_id, assignment_id)
 
         if return_val[1]:
             transaction_mgr.save()
@@ -113,7 +113,7 @@ class AssignmentViewHandler:
     def __init__(self):
         pass
 
-    def TeacherAssignmentView(self, user_id, teacher_id, class_, section, subject):
+    def teacher_assignment_view(self, user_id, teacher_id, class_, section, subject):
         """
         :return:
         """
@@ -122,7 +122,7 @@ class AssignmentViewHandler:
         db_conn = transaction_manager.GetDatabaseConnection("READWRITE")
 
         assignment_view = AssignmentView(db_conn)
-        return_val = assignment_view.assignmentByClassSubjectId(user_id, teacher_id, class_, section, subject)
+        return_val = assignment_view.assignment_by_class_subject_id(user_id, teacher_id, class_, section, subject)
 
         if return_val[1] == True:
             transaction_manager.save()
@@ -131,7 +131,7 @@ class AssignmentViewHandler:
         transaction_manager.end()
         return return_val[0]
 
-    def AssignmentStudentDetailView(self, assignment_id, teacher_id):
+    def assignment_student_detail_view(self, assignment_id, teacher_id):
         """
         :param assignment_id:
         :return:
@@ -141,7 +141,7 @@ class AssignmentViewHandler:
         db_conn = transaction_manager.GetDatabaseConnection("READ")
 
         assignment_view = AssignmentView(db_conn)
-        return_val = assignment_view.studentSubmissionsViewByAssignment(assignment_id, teacher_id)
+        return_val = assignment_view.student_submissions_view_by_assignment(assignment_id, teacher_id)
 
         if return_val[1] == True:
             transaction_manager.save()

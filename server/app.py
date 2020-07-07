@@ -1,20 +1,23 @@
 from flask import Flask
 from flask_restful import Api
-from services.leave_management.leave_controller import StudentLeaves, SubmitLeave, ManageLeavesAdmin, \
-    TeacherDashboardLeaveHistory, TeacherDashboardLeaveCategoryRecord
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, \
-    StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName, \
-    TeacherDashboardLineGraph
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName, TeacherAttendance, TeacherLatestDateAttendance, TeacherLatestAttendanceDetails, TeacherAttendanceByName, TeacherAttendanceReport, TeacherAttendanceReportByName
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentDashboardCard1, \
-    StudentDashboardCard2, StudentDashboardCard3, StudentDashboardCard4
-from services.leave_management.leave_controller import StudentLeaves, SubmitLeave, ManageLeavesAdmin
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
-from services.leave_management.leave_controller import StudentLeaves
 
+from services.leave_management.leave_controller import StudentLeaves, SubmitLeave, ManageLeavesAdmin, \
+                                                    TeacherDashboardLeaveHistory, TeacherDashboardLeaveCategoryRecord
+from services.leave_management.leave_controller import StudentLeaves, SubmitLeave, ManageLeavesAdmin
+
+from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, \
+                                                    StudentLatestDateAttendance, StudentLatestAttendanceDetails, \
+                                                    StudentsLowAttendance, StudentAttendanceByName
+from services.attendance.attendance_controller import TeacherAttendance, TeacherLatestDateAttendance, \
+                                                    TeacherLatestAttendanceDetails, TeacherAttendanceByName, \
+                                                    TeacherAttendanceReport, TeacherAttendanceReportByName, \
+                                                    TeacherDashboardLineGraph
+from services.attendance.attendance_controller import StudentDashboardCard1, StudentDashboardCard2, \
+                                                    StudentDashboardCard3, StudentDashboardCard4
 from services.assignment.assignment_controller import AssignmentQuestions, PendingAssignment, CompletedAssignment, \
-                                                        AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView, \
-                                                        AssignmentSubmit, GetAssignment, AssignmentHistory
+                                                    AssignmentByEmployee, TeacherAssignments, \
+                                                    TeacherAssignmentDetailView, AssignmentSubmit, \
+                                                    GetAssignment, AssignmentHistory
 
 app = Flask(__name__)
 api = Api(app)
