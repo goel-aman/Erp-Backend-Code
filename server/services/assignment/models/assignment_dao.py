@@ -243,7 +243,7 @@ class AssignmentSubmitDao():
 
     def get_student_average_marks(self, student_id: int):
         query = "select sub.name, gol.average_marks from subject sub left outer join " \
-                "(select sam.student_id,a.subject_id, qp.assignment_id, (sum(qr.marks_awarded)/sam.marks)*100 " \
+                "(select sam.student_id,a.subject_id, qp.assignment_id, (sum(qr.marks_awarded)/sum(qp.marks))*100 " \
                 "as average_marks from quiz_response qr inner join question_pool qp " \
                 "on qp.id=qr.question_pool_id inner join assignment a on a.assignment_id= qp.assignment_id " \
                 "inner join student_assignment_map sam on sam.student_id=qr.student_id " \
