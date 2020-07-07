@@ -5,14 +5,19 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, \
     StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName, \
     TeacherDashboardLineGraph
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName, TeacherAttendance, TeacherLatestDateAttendance, TeacherLatestAttendanceDetails, TeacherAttendanceByName, TeacherAttendanceReport, TeacherAttendanceReportByName
+from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, \
+    StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName, \
+    TeacherAttendance, TeacherLatestDateAttendance, TeacherLatestAttendanceDetails, TeacherAttendanceByName, \
+    TeacherAttendanceReport, TeacherAttendanceReportByName
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentDashboardCard1, \
     StudentDashboardCard2, StudentDashboardCard3, StudentDashboardCard4
 from services.leave_management.leave_controller import StudentLeaves, SubmitLeave, ManageLeavesAdmin
-from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
+from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, \
+    StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
-from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentSubmit, GetAssignment
+from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentSubmit, GetAssignment, \
+    AssignmentHistory
 
 app = Flask(__name__)
 api = Api(app)
@@ -81,7 +86,6 @@ api.add_resource(TeacherAttendanceByName, "/attendance/teacher/name/<teacher_nam
 api.add_resource(TeacherAttendanceReport, "/attendance/teacher/report")
 api.add_resource(TeacherAttendanceReportByName, "/attendance/teacher/report/<int:emp_id>")
 
-
 api.add_resource(SubmitLeave, "/submitleave/<int:user_id>")
 """
     get -> teacher login (leave -> apply leave)
@@ -120,6 +124,10 @@ api.add_resource(AssignmentSubmit, "/assignmentsubmit/<int:student_id>")
 api.add_resource(GetAssignment, "/getstudentassignmentsolution/")
 """
     get -> teacher login assignment get student assignment solution
+"""
+api.add_resource(AssignmentHistory, "/assignmenthistory/<int:student_id>")
+"""
+    get -> student login assignment submitted history
 """
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

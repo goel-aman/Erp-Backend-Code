@@ -86,7 +86,8 @@ class AssignmentHandler():
             if question_type[0]['question_type_id'] != 3:
                 assignment_dao.submit_assignment(student_id, solutions['question_pool_id'], solutions['solution'])
             else:
-                assignment_dao.submit_assignment_manual(student_id, solutions['question_pool_id'], solutions['solution'])
+                assignment_dao.submit_assignment_manual(student_id, solutions['question_pool_id'],
+                                                        solutions['solution'])
         assignment_dao.submit_assignment_student(student_id, assignment_sol[0]['question_pool_id'])
         transaction_mgr.save()
 
@@ -96,3 +97,25 @@ class AssignmentHandler():
         assignment_dao = AssignmentSubmitDao(db_conn)
         records = assignment_dao.get_student_assignment_solution(assignment_id, student_id)
         return records
+
+    def get_assignment_history(self, student_id: int):
+        transaction_mgr = TransactionalManager()
+        db_conn = transaction_mgr.GetDatabaseConnection("READWRITE")
+        assignment_dao = AssignmentSubmitDao(db_conn)
+        records1 = assignment_dao.get_student_teacher_name(student_id)
+        records2 = assignment_dao.get_student_assignment_count(student_id)
+        records3 = assignment_dao.get_student_late_assignments(student_id)
+        records4 = assignment_dao.get_student_average_marks(student_id)
+        records5 = assignment_dao.get_assignment_status(student_id)
+
+        record6 = dict()
+        for index in range(0, len(records1)):
+            records7 = dict()
+            records7.update({"teacher-name": records1[index]['name'], "assignment-count": records2[index]['no_of_assignments'],
+                          "late-submission": records3[index]['late_submission'],
+                          "average_marks": records4[index]['average_marks'], "status": records5[index]['is_evaluated']})
+            record6[records2[index]['name']]= records7
+
+        return(record6)
+        #return {"teacher_name": records1, "assignment_count": records2, "late_assignment": records3,
+          #      "average_marks": records4, "assignment_status": records5}

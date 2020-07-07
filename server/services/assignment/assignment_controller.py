@@ -111,6 +111,7 @@ class AssignmentSubmit(Resource):
         print('Making request to the handler to post the students data')
         assignment_handler.assignment_submit(student_id, assignment_sol)
 
+
 class GetAssignment(Resource):
     """
         Get student assignment solutions in teacher login
@@ -121,10 +122,28 @@ class GetAssignment(Resource):
             return [ {question_pool_id : 1, answer: A},{question_pool_id : 1, answer: A}]
             content type: application/json
     """
+
     def get(self):
         assignment_id = request.args.get('assignment_id')
         student_id = request.args.get('student_id')
-        assignment_handler= AssignmentHandler()
+        assignment_handler = AssignmentHandler()
         print('Making request to the handler to post the students data')
-        records = assignment_handler.get_student_assignment_solution(assignment_id,student_id)
+        records = assignment_handler.get_student_assignment_solution(assignment_id, student_id)
+        return jsonify(records)
+
+
+class AssignmentHistory(Resource):
+    """
+        get the records of all the assignments submitted by the student
+        Param: Student Id
+        Request:
+            path: "api/v0/assingmenthistory/<int:student_id>
+    """
+
+    def get(self, student_id):
+        if not student_id:
+            return {"error": "mandatory parameter not supplied "}, 404
+        assignment_handler = AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        records = assignment_handler.get_assignment_history(student_id)
         return jsonify(records)
