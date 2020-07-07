@@ -12,12 +12,11 @@ from services.leave_management.leave_controller import StudentLeaves, SubmitLeav
 from services.attendance.attendance_controller import StudentAttendance, StudentsAttendance, StudentLatestDateAttendance, StudentLatestAttendanceDetails, StudentsLowAttendance, StudentAttendanceByName
 from services.leave_management.leave_controller import StudentLeaves
 
-from services.assignment.assignment_controller import UploadAssignmentByEmployee, AssignmentQuestions, PendingAssignment, CompletedAssignment
+from services.assignment.assignment_controller import AssignmentQuestions, PendingAssignment, CompletedAssignment, \
+                                                        AssignmentByEmployee, TeacherAssignments, TeacherAssignmentDetailView, AssignmentSubmit, GetAssignment
 
 app = Flask(__name__)
 api = Api(app)
-
-# app.config['UPLOAD_FOLDER'] = "uploads/"
 
 
 api.add_resource(StudentAttendance, "/attendance/student/<int:student_id>")
@@ -109,11 +108,29 @@ api.add_resource(TeacherDashboardLeaveCategoryRecord, "/teacherdashboardleavecat
     ASSIGNMENT - related APIs
 """
 
-api.add_resource(UploadAssignmentByEmployee, "/assignment/employee/<int:employee_id>")
-"""
-    get -> teacher or admin assignment upload
-"""
 
+api.add_resource(AssignmentByEmployee, "/assignment/employee/<int:employee_id>")
+"""
+    post    -> employee assignment upload
+    delete  -> employee assignment delete
+"""
+api.add_resource(TeacherAssignments, "/teacher/<int:teacher_id>/assignments")
+"""
+    post    -> teacher or admin assignment upload 
+"""
+api.add_resource(TeacherAssignmentDetailView, "/teacher/<int:teacher_id>/assignments/<int:assignment_id>")
+"""
+    get     -> Teacher assignments list with details
+"""
+api.add_resource(AssignmentSubmit, "/assignmentsubmit/<int:student_id>")
+"""
+    post    -> student login assignment submit responses
+    get     -> Teacher assignment with student list view
+"""
+api.add_resource(GetAssignment, "/getstudentassignmentsolution/")
+"""
+    get     -> teacher login assignment get student assignment solution
+"""
 api.add_resource(AssignmentQuestions, "/assignment_ques/<int:assignment_id>")
 """
     get -> questions of a particular assignment
