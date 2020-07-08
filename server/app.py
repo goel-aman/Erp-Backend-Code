@@ -17,7 +17,7 @@ from services.attendance.attendance_controller import StudentDashboardCard1, Stu
 from services.assignment.assignment_controller import AssignmentQuestions, PendingAssignment, CompletedAssignment, \
                                                     AssignmentByEmployee, TeacherAssignments, \
                                                     TeacherAssignmentDetailView, AssignmentSubmit, \
-                                                    GetAssignment, AssignmentHistory
+                                                    GetAssignment, AssignmentHistory, PostAssignmentMarks
 
 app = Flask(__name__)
 api = Api(app)
@@ -152,6 +152,10 @@ api.add_resource(CompletedAssignment, "/completed_assignment/<int:student_id>/<i
 api.add_resource(AssignmentHistory, "/assignmenthistory/<int:student_id>")
 """
     get -> student login assignment submitted history
+"""
+api.add_resource(PostAssignmentMarks, "/postassignmentmarks/<int:teacher_id>")
+"""
+    post-> teacher login to post student assignment marks
 """
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

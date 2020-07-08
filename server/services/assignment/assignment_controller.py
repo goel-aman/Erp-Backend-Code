@@ -347,3 +347,21 @@ class AssignmentHistory(Resource):
         print('Making request to the handler to post the students data')
         records = assignment_handler.get_assignment_history(student_id)
         return jsonify(records)
+
+class PostAssignmentMarks(Resource):
+    """
+        post student marks for a assignment given the teacher id
+        Param : Teacher_id
+        body:{
+                {"question_pool_id": 1, "marks_awarded": 2, "student_id" : 1, "evaluated_sheet_link": null}
+                }
+        Path: "api/vo/postassignmentmarks/<int:teacher_id"
+
+    """
+    def post(self, teacher_id):
+        if not teacher_id:
+            return {"error" : "mandatory parameter not supplied"}
+        student_marks = request.json
+        assignment_handler = AssignmentHandler()
+        print('Making request to the handler to post the students data')
+        assignment_handler.post_assignment_marks(teacher_id, student_marks)
