@@ -114,6 +114,7 @@ api.add_resource(TeacherDashboardLeaveCategoryRecord, "/teacherdashboardleavecat
 
 api.add_resource(AssignmentByEmployee, "/assignment/employee/<int:employee_id>")
 """
+    get     -> employee active assignments
     post    -> employee assignment upload
     delete  -> employee assignment delete
 """

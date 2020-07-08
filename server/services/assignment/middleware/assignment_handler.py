@@ -106,6 +106,24 @@ class AssignmentHandler:
         transaction_mgr.end()
         return return_val
 
+    def active_assignments(self, user_id):
+        """
+        :param user_id:
+        :return:
+        """
+        return_val = None
+        transaction_manager = TransactionalManager()
+        db_conn = transaction_manager.GetDatabaseConnection("READWRITE")
+
+        assignment_view = AssignmentDao(db_conn)
+        return_val = assignment_view.active_assignment_by_userid(user_id)
+
+        if return_val[1] == True:
+            transaction_manager.save()
+            return return_val[0]
+
+        transaction_manager.end()
+        return return_val[0]
 
 class AssignmentViewHandler:
     """

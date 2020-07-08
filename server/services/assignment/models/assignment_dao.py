@@ -230,6 +230,37 @@ class AssignmentDao:
         return_val = ("Assignment deleted!", True)
         return return_val
 
+    def active_assignment_by_userid(self, user_id):
+        """
+        :param user_id:
+        :return:
+        """
+        return_val = dict()
+
+        # Fetch all the assignments,
+        query = "select * from assignment where uploaded_by=%s and is_deleted=0;" % user_id
+        records = self.db_conn.processquery(query=query, fetch=True)
+
+        if len(records) > 0:
+            for record in records:
+                return_dict = dict()
+                return_dict["id"] = record.get("assignment_id")
+                return_dict["topic"] = record.get("title")
+                return_dict["subject"] = None
+                query = "select name from subject where subject_id=%s" % record.get("subject_id", "")
+                subject_records = self.db_conn.processquery(query=query, fetch=True)
+                return_dict["subject"] = subject_records[0].get("name", "")
+                return_dict["standard"] = None
+                query = "select standard, section from class where class_id=%s" % record.get("class_id", "")
+                class_records = self.db_conn.processquery(query=query, fetch=True)
+                return_dict["standard"] = str(class_records[0].get("standard")) + "-" + str(class_records[0].get("section"))
+                return_dict["deadline"] = record.get("submission_date")
+                return_val[record.get("assignment_id")] = return_dict
+
+            return return_val, True
+        else:
+            return "Invalid assignment", False
+
 
 class AssignmentSubmitDao:
     """

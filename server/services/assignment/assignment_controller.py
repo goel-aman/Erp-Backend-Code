@@ -13,6 +13,15 @@ class AssignmentByEmployee(Resource):
         This resource will be responsible for uploading,
         processing and submitting assignments by employee or students.
     """
+    def get(self, employee_id):
+        # Check for employee existence,
+        check_emp = AssignmentHandler().check_user(employee_id=employee_id)
+        if check_emp[1] == False:
+            return jsonify("Invalid User")
+
+        assign_handler = AssignmentHandler()
+        return_val = assign_handler.active_assignments(check_emp[0])
+        return jsonify(return_val)
 
     def post(self, employee_id):
         """
