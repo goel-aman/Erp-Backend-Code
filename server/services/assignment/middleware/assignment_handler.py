@@ -10,7 +10,6 @@ from core.lib.transactional_manager import TransactionalManager
 class AssignmentHandler:
     """
     """
-
     def __init__(self):
         pass
 
@@ -124,6 +123,7 @@ class AssignmentHandler:
 
         transaction_manager.end()
         return return_val[0]
+
 
 class AssignmentViewHandler:
     """
@@ -245,7 +245,6 @@ class AssignmentViewHandler:
             record['percentage'] = float("{:.2f}".format(record['scored_marks']*100/record['total_marks']))
 
         return completed_assignment
-
 
     def get_assignment_history(self, student_id: int):
         transaction_mgr = TransactionalManager()

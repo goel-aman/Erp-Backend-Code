@@ -248,6 +248,7 @@ class GetAssignment(Resource):
         records = assignment_handler.get_student_assignment_solution(assignment_id, student_id)
         return jsonify(records)
 
+
 class AssignmentQuestions(Resource):
 
     def get(self, assignment_id):
@@ -356,6 +357,7 @@ class AssignmentHistory(Resource):
         print('Making request to the handler to post the students data')
         records = assignment_handler.get_assignment_history(student_id)
         return jsonify(records)
+
 
 class PostAssignmentMarks(Resource):
     """

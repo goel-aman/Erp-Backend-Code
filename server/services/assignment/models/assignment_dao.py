@@ -236,6 +236,9 @@ class AssignmentDao:
         :return:
         """
         return_val = dict()
+        return_val['mcq'] = dict()
+        return_val['subjective'] = dict()
+        return_val['manual'] = dict()
 
         # Fetch all the assignments,
         query = "select * from assignment where uploaded_by=%s and is_deleted=0;" % user_id
@@ -253,9 +256,22 @@ class AssignmentDao:
                 return_dict["standard"] = None
                 query = "select standard, section from class where class_id=%s" % record.get("class_id", "")
                 class_records = self.db_conn.processquery(query=query, fetch=True)
-                return_dict["standard"] = str(class_records[0].get("standard")) + "-" + str(class_records[0].get("section"))
+                return_dict["standard"] = str(class_records[0].get("standard")) + "-" + \
+                                          str(class_records[0].get("section"))
                 return_dict["deadline"] = record.get("submission_date")
-                return_val[record.get("assignment_id")] = return_dict
+                query = "select question_type from question_type where id in " \
+                        "(select question_type_id from question_pool where assignment_id=%s " \
+                        "group by question_type_id);" % record.get("assignment_id")
+                question_type_records = self.db_conn.processquery(query=query, fetch=True)
+                import pdb; pdb.set_trace()
+                # Make separate dictionaries for individual question types,
+                for types in question_type_records:
+                    if types.get("question_type", "") == "mcq":
+                        return_val["mcq"][record.get("assignment_id")] = return_dict
+                    elif types.get("question_type", "") == "subjective":
+                        return_val["subjective"][record.get("assignment_id")] = return_dict
+                    elif types.get("question_type", "") == "manual":
+                        return_val["manual"][record.get("assignment_id")] = return_dict
 
             return return_val, True
         else:
@@ -385,6 +401,7 @@ class AssignmentSubmitDao:
         query = "update student_assignment_map set marks= %s, teacher_id=%s, is_evaluated=1,evaluated_timestamp=now()" \
                 " where assignment_id=%s and student_id=%s" %(total, teacher_id, records[0]['assignment_id'], student_id)
         self.db_conn.processquery(query=query, fetch=False)
+
 
 class CheckUser:
 
